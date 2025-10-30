@@ -2,10 +2,13 @@ import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as wafv2 from 'aws-cdk-lib/aws-wafv2';
+import { WafConstruct } from './constructs/waf';
 
 export class ApiStack extends cdk.Stack {
   public readonly api: apigateway.RestApi;
   public readonly lambdaFunction: lambda.Function;
+  public readonly waf: WafConstruct;
 
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -250,6 +253,19 @@ export class ApiStack extends cdk.Stack {
           }
         }
       ]
+    });
+
+    // Create WAF with low rate limit
+    this.waf = new WafConstruct(this, 'HaikuWaf', {
+      name: 'HaikuApiWaf',
+      rateLimit: 50, // Low rate limit: 50 requests per 5-minute window per IP
+      description: 'WAF for Haiku API with rate limiting protection'
+    });
+
+    // Associate WAF with API Gateway
+    new wafv2.CfnWebACLAssociation(this, 'HaikuApiWafAssociation', {
+      resourceArn: `arn:aws:apigateway:${this.region}::/restapis/${this.api.restApiId}/stages/prod`,
+      webAclArn: this.waf.webAcl.attrArn
     });
 
     // Output the API URL
