@@ -3,6 +3,8 @@ import { Construct } from 'constructs';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as wafv2 from 'aws-cdk-lib/aws-wafv2';
+import * as iam from 'aws-cdk-lib/aws-iam';
+import * as logs from 'aws-cdk-lib/aws-logs';
 import { WafConstruct } from './constructs/waf';
 
 export class ApiStack extends cdk.Stack {
@@ -51,6 +53,14 @@ export class ApiStack extends cdk.Stack {
       description: 'Lambda function to generate haiku from commit messages'
     });
 
+    // Create CloudWatch Logs role for API Gateway
+    const apiGatewayCloudWatchRole = new iam.Role(this, 'ApiGatewayCloudWatchRole', {
+      assumedBy: new iam.ServicePrincipal('apigateway.amazonaws.com'),
+      managedPolicies: [
+        iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AmazonAPIGatewayPushToCloudWatchLogs')
+      ]
+    });
+
     // Create REST API Gateway
     this.api = new apigateway.RestApi(this, 'HaikuApi', {
       restApiName: 'Haiku Generator API',
@@ -61,7 +71,9 @@ export class ApiStack extends cdk.Stack {
         throttlingBurstLimit: 200,
         loggingLevel: apigateway.MethodLoggingLevel.INFO,
         dataTraceEnabled: true,
-        metricsEnabled: true
+        metricsEnabled: true,
+        accessLogDestination: new apigateway.LogGroupLogDestination(new logs.LogGroup(this, 'ApiAccessLogs')),
+        accessLogFormat: apigateway.AccessLogFormat.jsonWithStandardFields()
       },
       defaultCorsPreflightOptions: {
         allowOrigins: apigateway.Cors.ALL_ORIGINS,
@@ -70,8 +82,17 @@ export class ApiStack extends cdk.Stack {
       },
       endpointConfiguration: {
         types: [apigateway.EndpointType.REGIONAL]
-      }
+      },
+      cloudWatchRole: true
     });
+    
+    // Set the CloudWatch role ARN for API Gateway account
+    const apiGatewayAccount = new apigateway.CfnAccount(this, 'ApiGatewayAccount', {
+      cloudWatchRoleArn: apiGatewayCloudWatchRole.roleArn
+    });
+    
+    // Add dependency to ensure the role is created before API Gateway tries to use it
+    this.api.node.addDependency(apiGatewayAccount);
 
     // Create request validator for method request validation
     const requestValidator = new apigateway.RequestValidator(this, 'HaikuRequestValidator', {
@@ -263,10 +284,13 @@ export class ApiStack extends cdk.Stack {
     });
 
     // Associate WAF with API Gateway
-    new wafv2.CfnWebACLAssociation(this, 'HaikuApiWafAssociation', {
+    const wafAssociation = new wafv2.CfnWebACLAssociation(this, 'HaikuApiWafAssociation', {
       resourceArn: `arn:aws:apigateway:${this.region}::/restapis/${this.api.restApiId}/stages/prod`,
       webAclArn: this.waf.webAcl.attrArn
     });
+    
+    // Add explicit dependency on the API Gateway deployment stage
+    wafAssociation.node.addDependency(this.api.deploymentStage);
 
     // Output the API URL
     new cdk.CfnOutput(this, 'HaikuApiUrl', {
