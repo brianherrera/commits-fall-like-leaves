@@ -67,8 +67,8 @@ export class ApiStack extends cdk.Stack {
       description: 'API to generate haiku from commit messages',
       deployOptions: {
         stageName: 'prod',
-        throttlingRateLimit: 100,
-        throttlingBurstLimit: 200,
+        throttlingRateLimit: 10,
+        throttlingBurstLimit: 50,
         loggingLevel: apigateway.MethodLoggingLevel.INFO,
         dataTraceEnabled: true,
         metricsEnabled: true,
