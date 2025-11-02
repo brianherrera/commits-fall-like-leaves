@@ -91,5 +91,5 @@ func (c *BedrockClient) InvokeClaude(ctx context.Context, prompt string, opts *C
 		return "", fmt.Errorf("%w: %v", ErrResponseParsing, err)
 	}
 
-	return response.Completion, nil
+	return response.Content[0].Text, nil
 }

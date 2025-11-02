@@ -25,7 +25,12 @@ func (m *MockBedrockRuntime) InvokeModel(ctx context.Context, params *bedrockrun
 func TestInvokeClaudeValidation(t *testing.T) {
 	mock := &MockBedrockRuntime{
 		InvokeModelFunc: func(ctx context.Context, params *bedrockruntime.InvokeModelInput, optFns ...func(*bedrockruntime.Options)) (*bedrockruntime.InvokeModelOutput, error) {
-			response := ClaudeResponse{Completion: "Test response"}
+			response := ClaudeResponse{Content: []ContentBlock{
+				{
+					Text: "Test response",
+					Type: "text",
+				},
+			}}
 			responseBytes, _ := json.Marshal(response)
 			return &bedrockruntime.InvokeModelOutput{
 				Body: responseBytes,

@@ -7,18 +7,18 @@ type ClaudeRequest struct {
 	Temperature float64   `json:"temperature,omitempty"`
 }
 
-type Message struct {
-	Content []ContentBlock `json:"content"`
-	Role    string         `json:"role"`
-}
-
 type ContentBlock struct {
 	Text string `json:"text"`
 	Type string `json:"type"`
 }
 
+type Message struct {
+	Content []ContentBlock `json:"content"`
+	Role    string         `json:"role"`
+}
+
 type ClaudeResponse struct {
-	Completion string `json:"completion"`
+	Content []ContentBlock `json:"content"`
 }
 
 type ClaudeOptions struct {
