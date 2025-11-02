@@ -46,38 +46,30 @@ func (c *BedrockClient) InvokeClaude(ctx context.Context, prompt string, opts *C
 		if opts.MaxTokens >= 0 {
 			options.MaxTokens = opts.MaxTokens
 		}
-
 		// Validate and apply Temperature (must be between 0.0 and 1.0)
 		if opts.Temperature >= 0 && opts.Temperature <= 1.0 {
 			options.Temperature = opts.Temperature
 		}
-
-		// Validate and apply TopP (must be between 0.0 and 1.0)
-		if opts.TopP >= 0 && opts.TopP <= 1.0 {
-			options.TopP = opts.TopP
-		}
-
-		// Validate and apply TopK (must be non-negative)
-		if opts.TopK >= 0 {
-			options.TopK = opts.TopK
-		}
-
-		// Apply stop sequences if provided
-		if len(opts.StopSequences) > 0 {
-			options.StopSequences = opts.StopSequences
+		if opts.System != "" {
+			options.System = opts.System
 		}
 	}
 
-	// Anthropic Claude requires enclosing the prompt as follows:
-	enclosedPrompt := "Human: " + prompt + "\n\nAssistant:"
-
-	request := ClaudeRequest{
-		Prompt:            enclosedPrompt,
-		MaxTokensToSample: options.MaxTokens,
-		Temperature:       options.Temperature,
-		TopP:              options.TopP,
-		TopK:              options.TopK,
-		StopSequences:     options.StopSequences,
+	request := &ClaudeRequest{
+		MaxTokens: options.MaxTokens,
+		Messages: []Message{
+			{
+				Role: "user",
+				Content: []ContentBlock{
+					{
+						Text: prompt,
+						Type: "text",
+					},
+				},
+			},
+		},
+		Temperature: options.Temperature,
+		System:      options.System,
 	}
 
 	body, err := json.Marshal(request)

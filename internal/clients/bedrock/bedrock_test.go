@@ -61,8 +61,6 @@ func TestInvokeClaudeValidation(t *testing.T) {
 			opts: &ClaudeOptions{
 				MaxTokens:   100,
 				Temperature: 0.7,
-				TopP:        0.9,
-				TopK:        0,
 			},
 			expectError: false,
 		},
@@ -72,8 +70,6 @@ func TestInvokeClaudeValidation(t *testing.T) {
 			opts: &ClaudeOptions{
 				MaxTokens:   100,
 				Temperature: 0.0, // Should be valid
-				TopP:        0.9,
-				TopK:        0,
 			},
 			expectError: false,
 		},
@@ -83,8 +79,6 @@ func TestInvokeClaudeValidation(t *testing.T) {
 			opts: &ClaudeOptions{
 				MaxTokens:   100,
 				Temperature: 1.5, // Invalid value - will be ignored
-				TopP:        0.9,
-				TopK:        0,
 			},
 			expectError: false, // Not an error, just uses default
 		},
@@ -137,12 +131,6 @@ func TestInvokeClaudeSuccess(t *testing.T) {
 				t.Errorf("Failed to unmarshal request body: %v", err)
 			}
 
-			// Verify prompt format
-			expectedPromptPrefix := "Human: "
-			if request.Prompt == "" || request.Prompt[:len(expectedPromptPrefix)] != expectedPromptPrefix {
-				t.Errorf("Expected prompt to start with %q, got %q", expectedPromptPrefix, request.Prompt)
-			}
-
 			// Return mock response
 			response := ClaudeResponse{Completion: expectedCompletion}
 			responseBytes, _ := json.Marshal(response)
@@ -165,11 +153,8 @@ func TestInvokeClaudeSuccess(t *testing.T) {
 
 	// Test with custom options
 	customOpts := &ClaudeOptions{
-		MaxTokens:     200,
-		Temperature:   0.5,
-		TopP:          0.8,
-		TopK:          5,
-		StopSequences: []string{"STOP"},
+		MaxTokens:   200,
+		Temperature: 0.5,
 	}
 
 	completion, err = client.InvokeClaude(context.Background(), "Test prompt with options", customOpts)

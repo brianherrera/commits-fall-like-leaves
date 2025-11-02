@@ -5,6 +5,4 @@ const (
 
 	DefaultMaxTokens   = 500
 	DefaultTemperature = 0.7
-	DefaultTopP        = 0.9
-	DefaultTopK        = 0
 )
