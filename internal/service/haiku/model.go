@@ -9,7 +9,7 @@ const (
 )
 
 type HaikuCommitRequest struct {
-	CommitMessage string `json:"commitMessage"`
+	CommitMessage string `json:"commitMessage" binding:"required"`
 	Mood          Mood   `json:"mood,omitempty"`
 }
 

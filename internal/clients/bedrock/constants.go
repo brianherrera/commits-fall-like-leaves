@@ -5,4 +5,12 @@ const (
 
 	DefaultMaxTokens   = 500
 	DefaultTemperature = 0.7
+
+	// AWS Bedrock error codes
+	ValidationExceptionCode           = "ValidationException"
+	ResourceNotFoundExceptionCode     = "ResourceNotFoundException"
+	ThrottlingExceptionCode           = "ThrottlingException"
+	ServiceQuotaExceededExceptionCode = "ServiceQuotaExceededException"
+	AccessDeniedExceptionCode         = "AccessDeniedException"
+	InternalServerExceptionCode       = "InternalServerException"
 )

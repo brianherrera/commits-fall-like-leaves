@@ -9,16 +9,6 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// AWS Bedrock error codes
-const (
-	ValidationExceptionCode           = "ValidationException"
-	ResourceNotFoundExceptionCode     = "ResourceNotFoundException"
-	ThrottlingExceptionCode           = "ThrottlingException"
-	ServiceQuotaExceededExceptionCode = "ServiceQuotaExceededException"
-	AccessDeniedExceptionCode         = "AccessDeniedException"
-	InternalServerExceptionCode       = "InternalServerException"
-)
-
 var (
 	ErrInvalidRequest   = errors.New("invalid request")
 	ErrModelInvocation  = errors.New("model invocation failed")
@@ -37,7 +27,6 @@ type BedrockError struct {
 	RequestID   string
 }
 
-// Error implements the error interface
 func (e *BedrockError) Error() string {
 	if e.StatusCode > 0 {
 		return fmt.Sprintf("bedrock error (status: %d, request-id: %s): %s",
@@ -46,7 +35,6 @@ func (e *BedrockError) Error() string {
 	return fmt.Sprintf("bedrock error: %s", e.Message)
 }
 
-// Unwrap returns the original error
 func (e *BedrockError) Unwrap() error {
 	return e.OriginalErr
 }

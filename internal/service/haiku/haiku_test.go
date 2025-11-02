@@ -86,7 +86,6 @@ func TestCreateHaiku(t *testing.T) {
 
 			response, err := service.CreateHaiku(context.Background(), request)
 
-			// Check error expectations
 			if tc.expectError {
 				if err == nil {
 					t.Errorf("Expected error but got nil")
