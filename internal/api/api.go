@@ -26,6 +26,11 @@ func NewDefaultHaikuAPI(cfg aws.Config) *HaikuAPI {
 	return NewHaikuAPI(haiku.NewDefaultHaikuService(cfg))
 }
 
+func (api *HaikuAPI) SetupMiddleware(router *gin.Engine) {
+	router.Use(gin.Logger())
+	router.Use(gin.Recovery())
+}
+
 func (api *HaikuAPI) SetupRoutes(router *gin.Engine) {
 	router.POST("/haiku", api.postHaiku)
 }
