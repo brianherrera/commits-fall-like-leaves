@@ -31,6 +31,7 @@ func (api *HaikuAPI) SetupMiddleware(router *gin.Engine) {
 	router.Use(gin.Recovery())
 }
 
+// API Endpoints
 func (api *HaikuAPI) SetupRoutes(router *gin.Engine) {
 	router.POST("/haiku", api.postHaiku)
 }
