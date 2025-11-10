@@ -12,46 +12,26 @@ export class ApiStack extends cdk.Stack {
   public readonly lambdaFunction: lambda.Function;
   public readonly waf: WafConstruct;
 
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props: cdk.StackProps) {
     super(scope, id, props);
 
-    // Create Lambda function (placeholder for now)
+    // Create Lambda function
     this.lambdaFunction = new lambda.Function(this, 'HaikuLambdaFunction', {
-      runtime: lambda.Runtime.NODEJS_18_X,
-      handler: 'index.handler',
-      code: lambda.Code.fromInline(`
-        exports.handler = async (event) => {
-          console.log('Event:', JSON.stringify(event, null, 2));
-          
-          const body = JSON.parse(event.body || '{}');
-          const commitMessage = body.commit_message;
-          
-          return {
-            statusCode: 200,
-            headers: {
-              'Content-Type': 'application/json',
-              'Access-Control-Allow-Origin': '*',
-              'Access-Control-Allow-Methods': 'POST, OPTIONS',
-              'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-            },
-            body: JSON.stringify({
-              message: 'Haiku generated successfully!',
-              commit_message: commitMessage,
-              haiku: [
-                'Code flows like water',
-                'Commits fall like autumn leaves',
-                'Beauty in the merge'
-              ],
-              timestamp: new Date().toISOString(),
-              requestId: event.requestContext?.requestId
-            })
-          };
-        };
-      `),
+      runtime: lambda.Runtime.PROVIDED_AL2023,
+      handler: 'bootstrap',
+      code: lambda.Code.fromAsset('../lambda-function.zip'),
       timeout: cdk.Duration.seconds(30),
       memorySize: 256,
+      architecture: lambda.Architecture.X86_64,
       description: 'Lambda function to generate haiku from commit messages'
     });
+
+    this.lambdaFunction.addToRolePolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ['bedrock:InvokeModel'],
+      resources: [`arn:aws:bedrock:${props.env?.region}:${props.env?.account}:inference-profile/global.anthropic.claude-haiku-4-5-20251001-v1:0`]
+    }));
+
 
     // Create CloudWatch Logs role for API Gateway
     const apiGatewayCloudWatchRole = new iam.Role(this, 'ApiGatewayCloudWatchRole', {
