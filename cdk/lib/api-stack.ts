@@ -90,14 +90,19 @@ export class ApiStack extends cdk.Stack {
       schema: {
         type: apigateway.JsonSchemaType.OBJECT,
         properties: {
-          commit_message: {
+          commitMessage: {
             type: apigateway.JsonSchemaType.STRING,
             minLength: 1,
             maxLength: 500,
             description: 'The commit message to generate a haiku from'
+          },
+          mood: {
+            type: apigateway.JsonSchemaType.STRING,
+            enum: ['humorous', 'reflective', 'technical'],
+            description: 'Optional mood for the haiku'
           }
         },
-        required: ['commit_message'],
+        required: ['commitMessage'],
         additionalProperties: false
       }
     });
@@ -110,26 +115,11 @@ export class ApiStack extends cdk.Stack {
       schema: {
         type: apigateway.JsonSchemaType.OBJECT,
         properties: {
-          message: {
-            type: apigateway.JsonSchemaType.STRING
-          },
-          commit_message: {
-            type: apigateway.JsonSchemaType.STRING
-          },
           haiku: {
-            type: apigateway.JsonSchemaType.ARRAY,
-            items: {
-              type: apigateway.JsonSchemaType.STRING
-            }
-          },
-          timestamp: {
-            type: apigateway.JsonSchemaType.STRING
-          },
-          requestId: {
             type: apigateway.JsonSchemaType.STRING
           }
         },
-        required: ['message', 'commit_message', 'haiku', 'timestamp']
+        required: ['haiku']
       }
     });
 
