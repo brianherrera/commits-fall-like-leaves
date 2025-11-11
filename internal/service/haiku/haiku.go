@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/brianherrera/commits-fall-like-leaves/internal/clients/bedrock"
@@ -35,6 +36,7 @@ func NewDefaultHaikuService(cfg aws.Config) *HaikuService {
 func (h *HaikuService) CreateHaiku(ctx context.Context, request HaikuCommitRequest) (HaikuCommitResponse, error) {
 	mood := request.Mood
 	if mood != "" && !mood.IsValid() {
+		log.Printf("[HAIKU SERVICE] invalid mood: %s\n", mood)
 		return HaikuCommitResponse{}, ErrBadHaikuRequest
 	}
 
@@ -48,8 +50,10 @@ func (h *HaikuService) CreateHaiku(ctx context.Context, request HaikuCommitReque
 		System: HaikuSystemPrompt,
 	}
 
+	log.Printf("[HAIKU SERVICE] sending request to Bedrock: %s\n", prompt)
 	response, err := h.bedrockClient.InvokeClaude(ctx, prompt, options)
 	if err != nil {
+		log.Printf("[HAIKU SERVICE] error invoking Claude: %v\n", err)
 		return HaikuCommitResponse{}, fmt.Errorf("%w: invoking Claude: %v", ErrCreateHaiku, err)
 	}
 

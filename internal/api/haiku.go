@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/brianherrera/commits-fall-like-leaves/internal/service/haiku"
@@ -13,6 +14,7 @@ func (api *HaikuAPI) postHaiku(c *gin.Context) {
 
 	// Validate request format
 	if err := c.ShouldBindJSON(&request); err != nil {
+		log.Printf("[HAIKU API] error binding request: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error":   InvalidRequest,
 			"details": err.Error(),
@@ -22,6 +24,7 @@ func (api *HaikuAPI) postHaiku(c *gin.Context) {
 
 	// Enforce max commit length
 	if len(request.CommitMessage) > MaxCommitLength {
+		log.Printf("[HAIKU API] commitMessage exceeds %d characters", MaxCommitLength)
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"error":   InvalidRequest,
 			"details": fmt.Sprintf("commitMessage exceeds %d characters", MaxCommitLength),
@@ -33,6 +36,7 @@ func (api *HaikuAPI) postHaiku(c *gin.Context) {
 
 	if err != nil {
 		if err == haiku.ErrBadHaikuRequest {
+			log.Printf("[HAIKU API] bad haiku request: %v", err)
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error":   InvalidRequest,
 				"details": err.Error(),
@@ -40,6 +44,7 @@ func (api *HaikuAPI) postHaiku(c *gin.Context) {
 			return
 		}
 
+		log.Printf("[HAIKU API] internal server error: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": InternalServerError,
 		})

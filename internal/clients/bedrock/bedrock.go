@@ -9,6 +9,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
@@ -35,6 +36,7 @@ func NewDefaultBedrockClient(cfg aws.Config) *BedrockClient {
 func (c *BedrockClient) InvokeClaude(ctx context.Context, prompt string, opts *ClaudeOptions) (string, error) {
 	// Validate prompt
 	if prompt == "" {
+		log.Printf("[BEDROCK CLIENT] prompt is empty")
 		return "", fmt.Errorf("%w: prompt cannot be empty", ErrInvalidRequest)
 	}
 
@@ -74,6 +76,7 @@ func (c *BedrockClient) InvokeClaude(ctx context.Context, prompt string, opts *C
 
 	body, err := json.Marshal(request)
 	if err != nil {
+		log.Printf("[BEDROCK CLIENT] error encountered marshalling request: %v", err)
 		return "", fmt.Errorf("%w: %v", ErrInvalidRequest, err)
 	}
 
@@ -83,11 +86,13 @@ func (c *BedrockClient) InvokeClaude(ctx context.Context, prompt string, opts *C
 		Body:        body,
 	})
 	if err != nil {
+		log.Printf("[BEDROCK CLIENT] error encountered invoking model: %v", err)
 		return "", c.handleBedrockError(err)
 	}
 
 	var response ClaudeResponse
 	if err := json.Unmarshal(output.Body, &response); err != nil {
+		log.Printf("[BEDROCK CLIENT] error encountered parsing response: %v", err)
 		return "", fmt.Errorf("%w: %v", ErrResponseParsing, err)
 	}
 
