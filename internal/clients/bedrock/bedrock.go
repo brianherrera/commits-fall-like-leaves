@@ -58,7 +58,8 @@ func (c *BedrockClient) InvokeClaude(ctx context.Context, prompt string, opts *C
 	}
 
 	request := &ClaudeRequest{
-		MaxTokens: options.MaxTokens,
+		AnthropicVersion: AnthropicVersion,
+		MaxTokens:        options.MaxTokens,
 		Messages: []Message{
 			{
 				Role: "user",

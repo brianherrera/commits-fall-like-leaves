@@ -1,7 +1,8 @@
 package bedrock
 
 const (
-	ClaudeModelID = "global.anthropic.claude-haiku-4-5-20251001-v1:0" // Obviously.
+	AnthropicVersion = "bedrock-2023-05-31"
+	ClaudeModelID    = "global.anthropic.claude-haiku-4-5-20251001-v1:0" // Obviously.
 
 	DefaultMaxTokens   = 500
 	DefaultTemperature = 0.7

@@ -1,10 +1,11 @@
 package bedrock
 
 type ClaudeRequest struct {
-	MaxTokens   int       `json:"max_tokens"`
-	Messages    []Message `json:"messages"`
-	System      string    `json:"system,omitempty"`
-	Temperature float64   `json:"temperature,omitempty"`
+	AnthropicVersion string    `json:"anthropic_version"`
+	MaxTokens        int       `json:"max_tokens"`
+	Messages         []Message `json:"messages"`
+	System           string    `json:"system,omitempty"`
+	Temperature      float64   `json:"temperature,omitempty"`
 }
 
 type ContentBlock struct {
