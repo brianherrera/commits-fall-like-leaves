@@ -26,14 +26,17 @@ export class ApiStack extends cdk.Stack {
       description: 'Lambda function to generate haiku from commit messages'
     });
 
+    const bedrockModelID = "anthropic.claude-haiku-4-5-20251001-v1:0"
+
     this.lambdaFunction.addToRolePolicy(new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
       actions: ['bedrock:InvokeModel'],
-      resources: [`arn:aws:bedrock:${props.env?.region}:${props.env?.account}:inference-profile/global.anthropic.claude-haiku-4-5-20251001-v1:0`]
+      resources: [
+        `arn:aws:bedrock:${props.env?.region}:${props.env?.account}:inference-profile/global.${bedrockModelID}`,
+        `arn:aws:bedrock:*::foundation-model/${bedrockModelID}`,
+      ]
     }));
 
-
-    // Create CloudWatch Logs role for API Gateway
     const apiGatewayCloudWatchRole = new iam.Role(this, 'ApiGatewayCloudWatchRole', {
       assumedBy: new iam.ServicePrincipal('apigateway.amazonaws.com'),
       managedPolicies: [
@@ -41,7 +44,6 @@ export class ApiStack extends cdk.Stack {
       ]
     });
 
-    // Create REST API Gateway
     this.api = new apigateway.RestApi(this, 'HaikuApi', {
       restApiName: 'Haiku Generator API',
       description: 'API to generate haiku from commit messages',
@@ -66,7 +68,6 @@ export class ApiStack extends cdk.Stack {
       cloudWatchRole: true
     });
     
-    // Set the CloudWatch role ARN for API Gateway account
     const apiGatewayAccount = new apigateway.CfnAccount(this, 'ApiGatewayAccount', {
       cloudWatchRoleArn: apiGatewayCloudWatchRole.roleArn
     });
@@ -74,7 +75,6 @@ export class ApiStack extends cdk.Stack {
     // Add dependency to ensure the role is created before API Gateway tries to use it
     this.api.node.addDependency(apiGatewayAccount);
 
-    // Create request validator for method request validation
     const requestValidator = new apigateway.RequestValidator(this, 'HaikuRequestValidator', {
       restApi: this.api,
       requestValidatorName: 'haiku-request-validator',
@@ -82,7 +82,6 @@ export class ApiStack extends cdk.Stack {
       validateRequestParameters: false
     });
 
-    // Create request model for POST /haiku validation
     const haikuRequestModel = new apigateway.Model(this, 'HaikuRequestModel', {
       restApi: this.api,
       modelName: 'HaikuRequest',
@@ -107,7 +106,6 @@ export class ApiStack extends cdk.Stack {
       }
     });
 
-    // Create success response model
     const haikuResponseModel = new apigateway.Model(this, 'HaikuResponseModel', {
       restApi: this.api,
       modelName: 'HaikuResponse',
@@ -123,7 +121,6 @@ export class ApiStack extends cdk.Stack {
       }
     });
 
-    // Create error response model
     const errorResponseModel = new apigateway.Model(this, 'ErrorResponseModel', {
       restApi: this.api,
       modelName: 'ErrorResponse',
@@ -145,7 +142,6 @@ export class ApiStack extends cdk.Stack {
       }
     });
 
-    // Create Lambda integration
     const lambdaIntegration = new apigateway.LambdaIntegration(this.lambdaFunction, {
       requestTemplates: {
         'application/json': JSON.stringify({
@@ -206,7 +202,6 @@ export class ApiStack extends cdk.Stack {
       ]
     });
 
-    // Create /haiku resource
     const haikuResource = this.api.root.addResource('haiku');
 
     // POST /haiku - Generate haiku from commit message with request body validation
@@ -246,14 +241,12 @@ export class ApiStack extends cdk.Stack {
       ]
     });
 
-    // Create WAF with low rate limit
     this.waf = new WafConstruct(this, 'HaikuWaf', {
       name: 'HaikuApiWaf',
-      rateLimit: 50, // Low rate limit: 50 requests per 5-minute window per IP
+      rateLimit: 50, // 50 requests per 5-minute window per IP
       description: 'WAF for Haiku API with rate limiting protection'
     });
 
-    // Associate WAF with API Gateway
     const wafAssociation = new wafv2.CfnWebACLAssociation(this, 'HaikuApiWafAssociation', {
       resourceArn: `arn:aws:apigateway:${this.region}::/restapis/${this.api.restApiId}/stages/prod`,
       webAclArn: this.waf.webAcl.attrArn
@@ -262,28 +255,24 @@ export class ApiStack extends cdk.Stack {
     // Add explicit dependency on the API Gateway deployment stage
     wafAssociation.node.addDependency(this.api.deploymentStage);
 
-    // Output the API URL
     new cdk.CfnOutput(this, 'HaikuApiUrl', {
       value: this.api.url,
       description: 'URL of the Haiku API',
       exportName: 'HaikuApiUrl'
     });
 
-    // Output the specific endpoint URL
     new cdk.CfnOutput(this, 'HaikuEndpoint', {
       value: `${this.api.url}haiku`,
       description: 'POST endpoint for haiku generation',
       exportName: 'HaikuEndpoint'
     });
 
-    // Output the API ID
     new cdk.CfnOutput(this, 'HaikuApiId', {
       value: this.api.restApiId,
       description: 'ID of the Haiku API',
       exportName: 'HaikuApiId'
     });
 
-    // Output the Lambda function ARN
     new cdk.CfnOutput(this, 'HaikuLambdaArn', {
       value: this.lambdaFunction.functionArn,
       description: 'ARN of the Haiku Lambda function',

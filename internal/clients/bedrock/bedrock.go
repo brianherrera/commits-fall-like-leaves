@@ -45,11 +45,11 @@ func (c *BedrockClient) InvokeClaude(ctx context.Context, prompt string, opts *C
 	options := DefaultClaudeOptions()
 	if opts != nil {
 		// Validate and apply MaxTokens (must be positive)
-		if opts.MaxTokens >= 0 {
+		if opts.MaxTokens > 0 {
 			options.MaxTokens = opts.MaxTokens
 		}
 		// Validate and apply Temperature (must be between 0.0 and 1.0)
-		if opts.Temperature >= 0 && opts.Temperature <= 1.0 {
+		if opts.Temperature > 0 && opts.Temperature <= 1.0 {
 			options.Temperature = opts.Temperature
 		}
 		if opts.System != "" {
