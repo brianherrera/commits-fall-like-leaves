@@ -7,12 +7,17 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import { WafConstruct } from './constructs/waf';
 
+export interface ApiStackProps extends cdk.StackProps {
+  /** WAF rate limit per 5-minute window per IP */
+  ipRateLimit?: number;
+}
+
 export class ApiStack extends cdk.Stack {
   public readonly api: apigateway.RestApi;
   public readonly lambdaFunction: lambda.Function;
   public readonly waf: WafConstruct;
 
-  constructor(scope: Construct, id: string, props: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props: ApiStackProps) {
     super(scope, id, props);
 
     // Create Lambda function
@@ -243,7 +248,7 @@ export class ApiStack extends cdk.Stack {
 
     this.waf = new WafConstruct(this, 'HaikuWaf', {
       name: 'HaikuApiWaf',
-      rateLimit: 50, // 50 requests per 5-minute window per IP
+      rateLimit: props.ipRateLimit ?? 50,
       description: 'WAF for Haiku API with rate limiting protection'
     });
 

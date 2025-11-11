@@ -1,3 +1,10 @@
+# Required GitHub Secrets:
+# - AWS_ACCESS_KEY_ID: AWS access key for deployment
+# - AWS_SECRET_ACCESS_KEY: AWS secret access key
+# - AWS_REGION: Target AWS region (e.g., us-east-1)
+# - AWS_ACCOUNT_ID: Your AWS account ID
+# - IP_RATE_LIMIT: Optional WAF rate limit per 5-min window (default: 50)
+
 name: Deploy CDK Stack
 
 on:
@@ -59,3 +66,4 @@ jobs:
         env:
           CDK_DEFAULT_ACCOUNT: ${{ secrets.AWS_ACCOUNT_ID }}
           CDK_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+          IP_RATE_LIMIT: ${{ secrets.IP_RATE_LIMIT }}

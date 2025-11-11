@@ -8,4 +8,5 @@ new ApiStack(app, 'HaikuApiStack', {
     account: process.env.CDK_DEFAULT_ACCOUNT, 
     region: process.env.CDK_DEFAULT_REGION 
   },
+  ipRateLimit: parseInt(process.env.IP_RATE_LIMIT || ''),
 });

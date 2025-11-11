@@ -10,9 +10,8 @@ export interface WafConstructProps {
   
   /**
    * Rate limit per 5-minute window
-   * @default 100
    */
-  rateLimit?: number;
+  rateLimit: number;
   
   /**
    * Description for the WAF Web ACL
@@ -25,8 +24,6 @@ export class WafConstruct extends Construct {
 
   constructor(scope: Construct, id: string, props: WafConstructProps) {
     super(scope, id);
-
-    const rateLimit = props.rateLimit ?? 100;
 
     // Create WAF Web ACL with rate limiting rule
     this.webAcl = new wafv2.CfnWebACL(this, 'WebACL', {
@@ -42,7 +39,7 @@ export class WafConstruct extends Construct {
           priority: 1,
           statement: {
             rateBasedStatement: {
-              limit: rateLimit,
+              limit: props.rateLimit,
               aggregateKeyType: 'IP'
             }
           },
