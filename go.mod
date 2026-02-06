@@ -3,7 +3,7 @@ module github.com/brianherrera/commits-fall-like-leaves
 go 1.24.5
 
 require (
-	github.com/aws/aws-lambda-go v1.50.0
+	github.com/aws/aws-lambda-go v1.52.0
 	github.com/aws/aws-sdk-go-v2 v1.41.1
 	github.com/aws/aws-sdk-go-v2/config v1.31.16
 	github.com/aws/aws-sdk-go-v2/service/bedrockruntime v1.48.0
